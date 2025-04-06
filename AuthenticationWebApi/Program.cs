@@ -1,5 +1,10 @@
+using System.Text;
 using AuthenticationWebApi;
+using AuthenticationWebApi.ServiceInterface;
+using AuthenticationWebApi.ServicesImplementation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +16,27 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AuthenticationContext>(x => 
     x.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+            };
+        });
+
+    services.AddScoped<IAuthService, AuthService>();
+    services.AddScoped<ILoginService, LoginService>();
+}
+
 
 var app = builder.Build();
 
