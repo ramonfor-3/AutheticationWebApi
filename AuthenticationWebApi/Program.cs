@@ -1,5 +1,6 @@
 using System.Text;
 using AuthenticationWebApi;
+using AuthenticationWebApi.Middlewares;
 using AuthenticationWebApi.ServiceInterface;
 using AuthenticationWebApi.ServicesImplementation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<AuthenticationContext>(x =>
     x.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
 void ConfigureServices(IServiceCollection services)
 {
     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -46,6 +48,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<CompanyLocationMiddleware>();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
