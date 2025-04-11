@@ -52,13 +52,26 @@ public class LoginService(AuthenticationContext dbContext, IConfiguration _confi
 
     private string GenerateAccessToken(User user)
     {
-        var claims = new[]
+        var userContext = dbContext.UserCompanyLocations
+            .Where(x => x.UserId == user.Id)
+            .Include(x => x.Company)
+            .Include(x => x.Location)
+            .ToList();
+        
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, "User")
         };
+
+        foreach (var context in userContext)
+        {
+            claims.Add(new Claim("company_id", context.CompanyId.ToString()));
+            claims.Add(new Claim("location_id", context.LocationId.ToString()));
+            claims.Add(new Claim("role", context.Role.ToString()));
+            claims.Add(new Claim(ClaimTypes.Role, context.Role.ToString()));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

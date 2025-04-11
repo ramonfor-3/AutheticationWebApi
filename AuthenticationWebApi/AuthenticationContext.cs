@@ -9,6 +9,11 @@ public class AuthenticationContext:DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Company> Companies { get; set; }
+    public DbSet<Location> Locations { get; set; }
+    public DbSet<Permissions> Permissions { get; set; }
+    public DbSet<RolePermission> RolePermissions { get; set; }
+    public DbSet<UserCompanyLocation> UserCompanyLocations { get; set; }
     public AuthenticationContext(DbContextOptions options) : base(options)
     {
     }
