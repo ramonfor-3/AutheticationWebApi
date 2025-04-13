@@ -12,6 +12,7 @@ public class UserCompanyLocation
     public int LocationId { get; set; }
     public Role Role { get; set; } 
     public int RoleId { get; set; }      
-    
+    public DateTime CreatedAt { get; set; }
+    public bool IsActive { get; set; } 
     
 }

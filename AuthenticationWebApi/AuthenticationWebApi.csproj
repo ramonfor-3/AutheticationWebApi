@@ -43,8 +43,4 @@
       <None Remove="RepositoryInterface\**" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Configurations\" />
-    </ItemGroup>
-
 </Project>

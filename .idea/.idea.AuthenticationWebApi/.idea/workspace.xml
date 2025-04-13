@@ -10,32 +10,34 @@
   <component name="ChangeListManager">
     <list default="true" id="73449e48-ae22-47fb-93e2-54ac8214c3dd" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.AuthenticationWebApi/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.AuthenticationWebApi/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/AuthenticationContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/AuthenticationContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/AuthenticationWebApi.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/AuthenticationWebApi.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Controllers/AuthenticationController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Controllers/AuthenticationController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/AuthResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/ApiResponses/AuthResponse.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/PasswordChangeRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/PasswordChangeRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/Permissions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/Permissions.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/RefreshToken.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/RefreshToken.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/Role.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/Role.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/User.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/User.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/UserCompanyLocation.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/UserCompanyLocation.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Entities/UserRole.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Entities/UserRole.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/ServiceInterface/IAuthService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/ServiceInterface/IAuthService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/ServiceInterface/ILoginService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/ServiceInterface/ILoginService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/AuthService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/AuthService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/LoginService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/LoginService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.deps.json" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.deps.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/AuthenticationWebApi.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/bin/Debug/net8.0/appsettings.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.AssemblyInfo.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.AssemblyInfoInputs.cache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.csproj.CoreCompileInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.csproj.CoreCompileInputs.cache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.csproj.FileListAbsolute.txt" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.csproj.FileListAbsolute.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.pdb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/AuthenticationWebApi.sourcelink.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/ref/AuthenticationWebApi.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/ref/AuthenticationWebApi.dll" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/refint/AuthenticationWebApi.dll" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/Debug/net8.0/refint/AuthenticationWebApi.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AuthenticationWebApi/obj/rider.project.model.nuget.info" beforeDir="false" afterPath="$PROJECT_DIR$/AuthenticationWebApi/obj/rider.project.model.nuget.info" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,22 +50,23 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="feature/us-UseRolePermission" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/42347e6b97634007988f4665aae3611d26ac40/fe/8a5ebe08/DbContext.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/7d81b2d4f22bee75e5438c707251ae43cb0974c207db91ffc159118c84b4eb9/ServiceProvider.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2vLDvq2AfbNP3sMYIDchuID8YPj" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -74,7 +77,8 @@
     ".NET Launch Settings Profile.AuthenticationWebApi: http.executor": "Run",
     ".NET Launch Settings Profile.AuthenticationWebApi: https.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Develop",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature/us-auth-multitenant-roles-permissions",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -123,7 +127,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1743915694218</updated>
-      <workItem from="1743915695406" duration="20345000" />
+      <workItem from="1743915695406" duration="35124000" />
+      <workItem from="1744438308961" duration="16538000" />
     </task>
     <servers />
   </component>
@@ -145,24 +150,5 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/AuthService.cs</url>
-          <line>11</line>
-          <properties documentPath="$PROJECT_DIR$/AuthenticationWebApi/ServicesImplementation/AuthService.cs" containingFunctionPresentation="Method 'RegisterAsync'">
-            <startOffsets>
-              <option value="362" />
-            </startOffsets>
-            <endOffsets>
-              <option value="456" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

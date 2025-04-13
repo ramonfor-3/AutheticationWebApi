@@ -18,6 +18,7 @@ public class AuthService(AuthenticationContext context, IConfiguration configura
             Email = model.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
             CreatedAt = DateTime.UtcNow,
+            PasswordLastChangedAt = DateTime.UtcNow,
             IsActive = true
         };
         
@@ -25,5 +26,29 @@ public class AuthService(AuthenticationContext context, IConfiguration configura
         await context.SaveChangesAsync();
         return newUser;
 
+    }
+
+    public async Task ChangePasswordAsync(int userId, PasswordChangeRequest request)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null)
+            throw new Exception("Usuario no encontrado.");
+
+        if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+            throw new Exception("Contraseña actual incorrecta.");
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.PasswordLastChangedAt = DateTime.UtcNow;
+        
+        var activeTokens = await context.RefreshTokens
+            .Where(r => r.UserId == userId && !r.IsRevoked)
+            .ToListAsync();
+
+        foreach (var token in activeTokens)
+        {
+            token.IsRevoked = true;
+        }
+
+        await context.SaveChangesAsync();
     }
 }
