@@ -1,3 +1,4 @@
+using AuthenticationWebApi.Configurations;
 using AuthenticationWebApi.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,9 +15,10 @@ public class AuthenticationContext(DbContextOptions options) : DbContext(options
     public DbSet<Permissions> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<UserCompanyLocation> UserCompanyLocations { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CompanyConfiguration).Assembly);
+        
         modelBuilder.Entity<RefreshToken>()
             .HasOne(rt => rt.User)
             .WithMany()

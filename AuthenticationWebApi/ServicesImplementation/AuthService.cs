@@ -9,7 +9,7 @@ public class AuthService(AuthenticationContext context, IConfiguration configura
 {
     public async Task<User> RegisterAsync(RegisterRequest model)
     {
-        if (await context.Users.AnyAsync(x => x.Username == model.Username && x.Email == model.Email)) 
+        if (await context.Users.AsNoTracking().AnyAsync(x => x.Username == model.Username && x.Email == model.Email)) 
             throw new Exception("Username and email already exists");
 
         var newUser = new User

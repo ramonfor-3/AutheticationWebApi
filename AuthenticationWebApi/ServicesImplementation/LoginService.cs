@@ -18,11 +18,14 @@ public class LoginService(
     public async Task<AuthResponse> LoginAsync(LoginRequest model)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == model.Username);
+        if (user == null)
+            throw new Exception("Usuario no encontrado");
         if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
         {
             var timeLeft = user.LockoutEnd.Value - DateTime.UtcNow;
             throw new Exception($"Tu cuenta está bloqueada. Intenta nuevamente en {timeLeft.Minutes} minutos.");
         }
+
         if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
         {
             user.FailedLoginAttempts++;
@@ -37,26 +40,25 @@ public class LoginService(
             await dbContext.SaveChangesAsync();
             throw new Exception("Usuario o contraseña incorrectos.");
         }
-
-        var passwordExpiryDays = 90;
-        var passwordExpiryDate = user.PasswordLastChangedAt.AddDays(passwordExpiryDays);
+        
+        var passwordExpiryDate = user.PasswordLastChangedAt.AddDays(90);
 
         if (DateTime.UtcNow > passwordExpiryDate)
         {
             logger.LogWarning("La contraseña del usuario {Username} ha expirado.", user.Username);
             throw new PasswordExpiredException("Tu contraseña ha expirado. Por favor, cámbiala para continuar.");
         }
-        
+
         logger.LogInformation("Inicio de sesión exitoso para el usuario: {Username}", user.Username);
 
-        var accessToken = GenerateAccessToken(user);
+        var accessToken = await GenerateAccessToken(user);
         var tokenId = Guid.NewGuid().ToString();
         var refreshToken = GenerateRefreshToken();
         var hashedToken = BCrypt.Net.BCrypt.HashPassword(refreshToken);
-        
+
         var userAgent = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
         var ipAddress = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-        
+
         var oldTokens = await dbContext.RefreshTokens
             .Where(r => r.UserId == user.Id && r.UserAgent == userAgent && r.IsRevoked == false)
             .ToListAsync();
@@ -64,15 +66,14 @@ public class LoginService(
         foreach (var t in oldTokens)
         {
             t.IsRevoked = true;
-            dbContext.RefreshTokens.Update(t);
+            //dbContext.RefreshTokens.Update(t);
         }
-        
+
         var tokenIssuedAt = DateTime.UtcNow;
         if (user.PasswordLastChangedAt > tokenIssuedAt)
-        {
-            throw new TokenInvalidException("La contraseña ha sido cambiada, por lo que el token es inválido.");
-        }
+             throw new TokenInvalidException("La contraseña ha sido cambiada, por lo que el token es inválido.");
         
+
         var refreshTokenEntity = new RefreshToken
         {
             TokenId = tokenId,
@@ -88,13 +89,13 @@ public class LoginService(
         user.LockoutEnd = null;
         await dbContext.RefreshTokens.AddAsync(refreshTokenEntity);
         await dbContext.SaveChangesAsync();
-        
-        return new AuthResponse { 
-            AccessToken = await accessToken, 
-            RefreshToken = refreshToken, 
+
+        return new AuthResponse
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
             TokenId = tokenId,
             Expiration = DateTime.UtcNow.AddMinutes(30)
-            
         };
     }
 
@@ -118,7 +119,7 @@ public class LoginService(
 
     private async Task<string> GenerateAccessToken(User user)
     {
-        var userContext = await dbContext.UserCompanyLocations
+        var userContexts = await dbContext.UserCompanyLocations
             .Where(x => x.UserId == user.Id)
             .Include(x => x.Role)
             .Include(x => x.Company)
@@ -132,22 +133,28 @@ public class LoginService(
             new Claim(ClaimTypes.Email, user.Email)
         };
 
-        var contexts = new List<object>();
+        var roleIds = userContexts.Select(x => x.RoleId).Distinct().ToList();
 
-        foreach (var context in userContext)
+        var rolePermissions = await dbContext.RolePermissions
+            .Where(rp => roleIds.Contains(rp.RoleId))
+            .Include(rp => rp.Permission)
+            .ToListAsync();
+
+        var contexts = new List<UserContextDto>();
+
+        foreach (var context in userContexts)
         {
-            var permissions = await dbContext.RolePermissions
+            var permissions = rolePermissions
                 .Where(rp => rp.RoleId == context.RoleId)
                 .Select(rp => rp.Permission.Code)
-                .ToListAsync();
+                .ToList();
 
-            contexts.Add(new
-            {
-                company_id = context.CompanyId,
-                location_id = context.LocationId,
-                role = context.Role.Name,
-                permissions = permissions
-            });
+            contexts.Add(new UserContextDto(
+                context.CompanyId,
+                context.LocationId,
+                context.Role.Name,
+                permissions
+            ));
         }
 
         var contextJson = System.Text.Json.JsonSerializer.Serialize(contexts);
@@ -156,11 +163,15 @@ public class LoginService(
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        var tokenExpiryMinutes = int.TryParse(configuration["JwtSettings:ExpiryMinutes"], out var minutes)
+            ? minutes
+            : 30;
+
         var token = new JwtSecurityToken(
             issuer: configuration["JwtSettings:Issuer"],
             audience: configuration["JwtSettings:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(tokenExpiryMinutes),
             signingCredentials: creds
         );
 

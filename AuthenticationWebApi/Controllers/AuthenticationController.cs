@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AuthenticationWebApi.Entities;
+using AuthenticationWebApi.Filters;
 using AuthenticationWebApi.ServiceInterface;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,8 @@ namespace AuthenticationWebApi.Controllers;
 public class AuthenticationController(
     ILogger<AuthenticationController> logger,
     IAuthService authService, 
-    ILoginService loginService)
+    ILoginService loginService,
+    IPermissionService permissionService)
     : ControllerBase
 {
     [HttpPost("RegisterUser")]
@@ -23,7 +25,8 @@ public class AuthenticationController(
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] PasswordChangeRequest request)
     {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var userId = int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id)
+            ? id : throw new UnauthorizedAccessException("No se pudo determinar el usuario.");
         await authService.ChangePasswordAsync(userId, request);
         return Ok("Contraseña actualizada con éxito.");
     }
@@ -41,5 +44,10 @@ public class AuthenticationController(
         var authResponse = await loginService.RefreshTokenAsync(request.TokenId, request.RefreshToken);
         return Ok(authResponse);
     }
-    
+    [HttpGet("GetUserPermissions")]
+    public async Task<List<string>> GetUserPermissions([FromQuery ]HasPermissionFilter filter)
+    {
+        var permissions = await permissionService.GetUserPermissionsAsync(filter);
+        return permissions;
+    }
 }
