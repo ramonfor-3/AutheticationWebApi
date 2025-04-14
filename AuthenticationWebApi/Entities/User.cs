@@ -7,6 +7,9 @@ public class User
     public string PasswordHash { get; set; } 
     public string Email { get; set; } 
     public bool IsActive { get; set; } 
+    public DateTime PasswordLastChangedAt { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTime? LockoutEnd { get; set; }
     public DateTime CreatedAt { get; set; } 
     public DateTime? LastLogin { get; set; } 
 }

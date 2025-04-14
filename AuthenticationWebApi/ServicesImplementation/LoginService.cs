@@ -3,121 +3,211 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using AuthenticationWebApi.Entities;
+using AuthenticationWebApi.Exceptions;
 using AuthenticationWebApi.ServiceInterface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AuthenticationWebApi.ServicesImplementation;
 
-public class LoginService(AuthenticationContext dbContext, IConfiguration _configuration) : ILoginService
+public class LoginService(
+    AuthenticationContext dbContext, 
+    IConfiguration configuration, 
+    IHttpContextAccessor httpContextAccessor, ILogger<LoginService> logger) : ILoginService
 {
     public async Task<AuthResponse> LoginAsync(LoginRequest model)
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Username == model.Username);
-        
-        if(user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-            throw new Exception("Invalid username or password");
-        
-        var accessToken = GenerateAccessToken(user);
-        var refreshToken = GenerateRefreshToken();
+        if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+        {
+            var timeLeft = user.LockoutEnd.Value - DateTime.UtcNow;
+            throw new Exception($"Tu cuenta está bloqueada. Intenta nuevamente en {timeLeft.Minutes} minutos.");
+        }
+        if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+        {
+            user.FailedLoginAttempts++;
 
+            if (user.FailedLoginAttempts >= 5)
+            {
+                user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                await dbContext.SaveChangesAsync();
+                throw new Exception("Has superado el número de intentos. Tu cuenta ha sido bloqueada por 15 minutos.");
+            }
+
+            await dbContext.SaveChangesAsync();
+            throw new Exception("Usuario o contraseña incorrectos.");
+        }
+
+        var passwordExpiryDays = 90;
+        var passwordExpiryDate = user.PasswordLastChangedAt.AddDays(passwordExpiryDays);
+
+        if (DateTime.UtcNow > passwordExpiryDate)
+        {
+            logger.LogWarning("La contraseña del usuario {Username} ha expirado.", user.Username);
+            throw new PasswordExpiredException("Tu contraseña ha expirado. Por favor, cámbiala para continuar.");
+        }
+        
+        logger.LogInformation("Inicio de sesión exitoso para el usuario: {Username}", user.Username);
+
+        var accessToken = GenerateAccessToken(user);
+        var tokenId = Guid.NewGuid().ToString();
+        var refreshToken = GenerateRefreshToken();
+        var hashedToken = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+        
+        var userAgent = httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
+        var ipAddress = httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        
+        var oldTokens = await dbContext.RefreshTokens
+            .Where(r => r.UserId == user.Id && r.UserAgent == userAgent && r.IsRevoked == false)
+            .ToListAsync();
+
+        foreach (var t in oldTokens)
+        {
+            t.IsRevoked = true;
+            dbContext.RefreshTokens.Update(t);
+        }
+        
+        var tokenIssuedAt = DateTime.UtcNow;
+        if (user.PasswordLastChangedAt > tokenIssuedAt)
+        {
+            throw new TokenInvalidException("La contraseña ha sido cambiada, por lo que el token es inválido.");
+        }
+        
         var refreshTokenEntity = new RefreshToken
         {
-            Token = refreshToken,
+            TokenId = tokenId,
+            TokenHash = hashedToken,
             UserId = user.Id,
             ExpiryDate = DateTime.UtcNow.AddDays(7),
-            IsRevoked = false
+            IsRevoked = false,
+            UserAgent = userAgent,
+            IpAddress = ipAddress,
+            CreatedAt = DateTime.UtcNow
         };
+        user.FailedLoginAttempts = 0;
+        user.LockoutEnd = null;
         await dbContext.RefreshTokens.AddAsync(refreshTokenEntity);
         await dbContext.SaveChangesAsync();
         
         return new AuthResponse { 
-            AccessToken = accessToken, 
+            AccessToken = await accessToken, 
             RefreshToken = refreshToken, 
+            TokenId = tokenId,
             Expiration = DateTime.UtcNow.AddMinutes(30)
             
         };
     }
 
-    public async Task LogoutAsync(string refreshToken)
+    public async Task LogoutAsync(string tokenId)
     {
-        var token = await dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == refreshToken);
-        if (token != null)
+        try
         {
+            var token = await dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.TokenId == tokenId);
+            if (token == null)
+                throw new TokenInvalidException("Token no válido o no encontrado.");
+
             token.IsRevoked = true;
             dbContext.RefreshTokens.Update(token);
             await dbContext.SaveChangesAsync();
         }
+        catch (Exception ex)
+        {
+            throw new Exception($"Error al intentar cerrar sesión: {ex.Message}");
+        }
     }
 
-    private string GenerateAccessToken(User user)
+    private async Task<string> GenerateAccessToken(User user)
     {
-        var userContext = dbContext.UserCompanyLocations
+        var userContext = await dbContext.UserCompanyLocations
             .Where(x => x.UserId == user.Id)
+            .Include(x => x.Role)
             .Include(x => x.Company)
             .Include(x => x.Location)
-            .ToList();
-        
+            .ToListAsync();
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Email, user.Email)
         };
+
+        var contexts = new List<object>();
 
         foreach (var context in userContext)
         {
-            claims.Add(new Claim("company_id", context.CompanyId.ToString()));
-            claims.Add(new Claim("location_id", context.LocationId.ToString()));
-            claims.Add(new Claim("role", context.Role.ToString()));
-            claims.Add(new Claim(ClaimTypes.Role, context.Role.ToString()));
+            var permissions = await dbContext.RolePermissions
+                .Where(rp => rp.RoleId == context.RoleId)
+                .Select(rp => rp.Permission.Code)
+                .ToListAsync();
+
+            contexts.Add(new
+            {
+                company_id = context.CompanyId,
+                location_id = context.LocationId,
+                role = context.Role.Name,
+                permissions = permissions
+            });
         }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]));
+        var contextJson = System.Text.Json.JsonSerializer.Serialize(contexts);
+        claims.Add(new Claim("context", contextJson));
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JwtSettings:Issuer"],
-            audience: _configuration["JwtSettings:Audience"],
+            issuer: configuration["JwtSettings:Issuer"],
+            audience: configuration["JwtSettings:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(30),
+            expires: DateTime.UtcNow.AddMinutes(30),
             signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
     
-    public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
+    public async Task<AuthResponse> RefreshTokenAsync(string tokenId, string refreshToken)
     {
         var storedRefreshToken = await dbContext.RefreshTokens
-            .FirstOrDefaultAsync(r => r.Token == refreshToken && r.IsRevoked == false);
+            .FirstOrDefaultAsync(r => r.TokenId == tokenId && !r.IsRevoked);
 
         if (storedRefreshToken == null || storedRefreshToken.ExpiryDate <= DateTime.UtcNow)
-            throw new Exception("Refresh token no válido o expirado.");
-        
+            throw new Exception("Token no válido o expirado.");
+
+        if (!BCrypt.Net.BCrypt.Verify(refreshToken, storedRefreshToken.TokenHash))
+            throw new Exception("Token inválido.");
+
         var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == storedRefreshToken.UserId);
-        
-        var newAccessToken = GenerateAccessToken(user);
-        
+        var newAccessToken = await GenerateAccessToken(user);
+        var newRefreshToken = GenerateRefreshToken();
+        var newHashedToken = BCrypt.Net.BCrypt.HashPassword(newRefreshToken);
+        var newTokenId = Guid.NewGuid().ToString();
+
         storedRefreshToken.IsRevoked = true;
         dbContext.RefreshTokens.Update(storedRefreshToken);
-        await dbContext.SaveChangesAsync();
-        
-        var newRefreshToken = GenerateRefreshToken();
-        var refreshTokenEntity = new RefreshToken
+
+        var newToken = new RefreshToken
         {
-            Token = newRefreshToken,
+            TokenId = newTokenId,
+            TokenHash = newHashedToken,
             UserId = user.Id,
             ExpiryDate = DateTime.UtcNow.AddDays(7),
-            IsRevoked = false
+            IsRevoked = false,
+            UserAgent = storedRefreshToken.UserAgent,
+            IpAddress = storedRefreshToken.IpAddress,
+            CreatedAt = DateTime.UtcNow
         };
-        dbContext.RefreshTokens.Add(refreshTokenEntity);
+
+        await dbContext.RefreshTokens.AddAsync(newToken);
         await dbContext.SaveChangesAsync();
 
         return new AuthResponse
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
+            TokenId = newTokenId,
             Expiration = DateTime.UtcNow.AddMinutes(30)
         };
     }
