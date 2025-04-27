@@ -36,6 +36,16 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Astacio http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5122",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "DevAstacio"
+      }
     }
   }
 }
